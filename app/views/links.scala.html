@@ -1,0 +1,151 @@
+@import akka.actor._
+@import akka.cluster._
+@import akka.cluster.sharding.ShardRegion._
+@import models.LinkActor._
+
+@(links: Iterable[LinkInfo], member: Member, csrs: CurrentShardRegionState, css: ClusterShardingStats)
+
+@formatList(items: Iterable[Any], showUpTo: Int) = @{
+  if (items.size <= showUpTo) items.mkString(",") else {
+    items.take(showUpTo).mkString(",") + " + " + (items.size - showUpTo) + " more"
+  }
+}
+
+@host(address: Address) = @{address.host.getOrElse(member.address.host)}
+
+@formatAddress(address: Address) = @{address.host}
+
+@locality() = @{
+  val connected = links.collect {
+    case li @ LinkInfo(_, _, Some(_), _, _) => li.isLocalEp.getOrElse(false)
+  }
+  val total = if (connected.isEmpty) 1.0 else connected.size.toDouble
+  connected.filter(identity).size / total
+}
+
+@main("Akka-Hub: links", "Links Information"){
+<div>
+    <h3>Local Links for <u>@formatAddress(member.address)</u></h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Shard #</th>
+            <th>Link</th>
+            <th>Connected</th>
+            <th>Endpoint Host</th>
+            <th>Co-located</th>
+            <th>Inbound</th>
+            <th>Outbound</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(link <- links) {
+        <tr>
+            <td>@link.shardId</td>
+            <td><a href="/links/@link.linkId">@link.linkId</a></td>
+            <td>@link.isConnected</td>
+            <td>@{link.endpoint.map(_.path.address).map(host)}</td>
+            <td>@link.isLocalEp</td>
+            <td>@link.inbound</td>
+            <td>@link.outbound</td>
+            <td>
+                @if(!link.isConnected) {
+                <button onclick="connect('@link.linkId');">Connect</button>
+                } else {
+                <button onclick="disconnect('@link.linkId');">Disconnect</button>
+                }
+                <button onclick="stop('@link.linkId');">Stop</button>
+            </td>
+        </tr>
+        }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8">Endpoint Locality: <b>@locality()</b></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h3>Local Shards for <u>@formatAddress(member.address)</u></h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Shard #</th>
+            <th>Links</th>
+            <th>Link Ids</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(shard <- csrs.shards) {
+        <tr>
+            <td>@shard.shardId</td>
+            <td>@shard.entityIds.size</td>
+            <td>@formatList(shard.entityIds, 5)</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <h3>Cluster Sharding Stats</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Node</th>
+            <th>Links</th>
+            <th>Links per Shard</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(region <- css.regions) {
+        <tr>
+            <td>@formatAddress(region._1)</td>
+            <td align="right">@region._2.stats.map(_._2).sum</td>
+            <td>@region._2.stats.map(e => e._1 + "->" + e._2).mkString(",")</td>
+        </tr>
+        }
+        </tbody>
+        <tfoot>
+        <tr>
+            <th>Total:</th>
+            <td align="right">@css.regions.flatMap(_._2.stats).map(_._2).sum</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <script>
+    function connect(linkId) {
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function disconnect(linkId) {
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'DELETE',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function stop(linkId) {
+        $.ajax({
+            url: '/links/' + linkId + '/stop',
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+</div>
+}

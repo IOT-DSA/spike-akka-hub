@@ -1,0 +1,26 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# https://www.playframework.com/documentation/latest/ScalaRouting
+# ~~~~
+
+GET       /                              controllers.ClientController.showEndpoints
+
+GET       /endpoints                     controllers.ClientController.showEndpoints
+POST      /endpoints/:linkId             controllers.ClientController.connect(linkId)
+DELETE    /endpoints/:linkId             controllers.ClientController.disconnect(linkId)
+PATCH     /endpoints/:linkId             controllers.ClientController.testReconnect(linkId)
+POST      /endpoints                     controllers.ClientController.connectBatch(count: Int ?= 10)
+POST      /endpoints/:linkId/msg         controllers.ClientController.send(linkId, to)
+
+GET       /links                         controllers.LinkController.showLinks
+GET       /links/:linkId                 controllers.LinkController.linkInfo(linkId)
+POST      /links/:linkId/connect         controllers.LinkController.connect(linkId)
+POST      /links/:linkId/disconnect      controllers.LinkController.disconnect(linkId)
+POST      /links/:linkId/stop            controllers.LinkController.stop(linkId)
+
+GET       /cluster                       controllers.ClusterController.clusterInfo
+POST      /cluster/:uid/down             controllers.ClusterController.down(uid: Long)
+POST      /cluster/:uid/leave            controllers.ClusterController.leave(uid: Long)
+
+# Map static resources from the /public folder to the /assets URL path
+GET       /assets/*file                  controllers.Assets.versioned(path="/public", file: Asset)
