@@ -1,0 +1,112 @@
+version: '2'
+
+services:
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - dsnet
+
+  broker1:
+    image: uralian/akka-hub:latest
+    container_name: broker1
+    depends_on:
+      - mongo
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: broker1
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/application.conf
+    ports:
+      - "9001:9000"
+      - "2551:2551"
+    networks:
+      - dsnet
+
+  broker2:
+    image: uralian/akka-hub:latest
+    container_name: broker2
+    depends_on:
+      - mongo
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: broker2
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/application.conf
+    ports:
+      - "9002:9000"
+      - "2552:2551"
+    networks:
+      - dsnet
+
+  broker3:
+    image: uralian/akka-hub:latest
+    container_name: broker3
+    depends_on:
+      - mongo
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: broker3
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/application.conf
+    ports:
+      - "9003:9000"
+      - "2553:2551"
+    networks:
+      - dsnet
+
+  broker4:
+    image: uralian/akka-hub:latest
+    container_name: broker4
+    depends_on:
+      - mongo
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: broker4
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/application.conf
+    ports:
+      - "9004:9000"
+      - "2554:2551"
+    networks:
+      - dsnet
+
+  broker5:
+    image: uralian/akka-hub:latest
+    container_name: broker5
+    depends_on:
+      - mongo
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: broker5
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/application.conf
+    ports:
+      - "9005:9000"
+      - "2555:2551"
+    networks:
+      - dsnet
+
+networks:
+  dsnet:
+    external:
+      name:  dsnet

@@ -1,0 +1,101 @@
+@import models.LinkActor._
+@import akka.cluster._
+@import akka.actor._
+
+@(member: Member, linkInfo: LinkInfo)
+
+@host(address: Address) = @{address.host.getOrElse(member.address.host)}
+
+@main("Akka-Hub: link" + linkInfo.linkId, "Link Information") {
+<div>
+    <h3>Link [@linkInfo.linkId]</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Link:</td>
+            <td>@linkInfo.ref</td>
+        </tr>
+        <tr>
+            <td>Link Host:</td>
+            <td>@host(linkInfo.ref.path.address)</td>
+        </tr>
+        <tr>
+            <td>Shard:</td>
+            <td>@linkInfo.shardId</td>
+        </tr>
+        <tr>
+            <td>Endpoint</td>
+            <td>@linkInfo.endpoint</td>
+        </tr>
+        <tr>
+            <td>Endpoint Host</td>
+            <td>@linkInfo.endpoint.map(_.path.address).map(host)</td>
+        </tr>
+        <tr>
+            <td>Connected:</td>
+            <td>@linkInfo.isConnected</td>
+        </tr>
+        <tr>
+            <td>Last Inbound:</td>
+            <td>@linkInfo.inbound</td>
+        </tr>
+        <tr>
+            <td>Last Outbound:</td>
+            <td>@linkInfo.outbound</td>
+        </tr>
+        </tbody>
+    </table>
+    <br/>
+
+    @if(!linkInfo.isConnected) {
+    <button onclick="connect();">Connect</button>
+    <button onclick="stop();">Stop</button>
+    }
+
+    @if(linkInfo.isConnected) {
+    <button onclick="disconnect();">Disconnect</button>
+    <button onclick="stop();">Stop</button>
+    }
+
+    <script>
+    function connect() {
+        $.ajax({
+            url: '/endpoints/@{linkInfo.linkId}',
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function disconnect() {
+        $.ajax({
+            url: '/endpoints/@{linkInfo.linkId}',
+            type: 'DELETE',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function stop() {
+        $.ajax({
+            url: '/links/@{linkInfo.linkId}/stop',
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+</div>
+}

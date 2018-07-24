@@ -1,0 +1,112 @@
+@import akka.actor._
+@import akka.cluster._
+
+@(member: Member, endpoints: Iterable[EndpointInfo])
+
+@host(address: Address) = @{address.host.getOrElse(member.address.host)}
+
+@main("Akka-Hub: connections", "Client Connections"){
+<div>
+
+    <label>New link:</label>
+    <input type="text" id="linkId"/>
+    <button onclick="connect();">Connect</button>
+    <br/>
+
+    <h3>Connected Endpoints</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Link</th>
+            <th>Ref</th>
+            <th>Host</th>
+            <th>Last Inbound</th>
+            <th>Last Outbound</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(ep <- endpoints) {
+        <tr>
+            <td><a href="links/@ep.linkId">@ep.linkId</a></td>
+            <td>@ep.ref.path.name</td>
+            <td>@host(ep.ref.path.address)</td>
+            <td>
+                <table width="100%">
+                    <tbody>
+                    <tr>
+                        <td>@ep.state.inbound.getOrElse("n/a")</td>
+                        <td>
+                            <label>To:</label>
+                            <input type="text" size="10" id="@{ep.linkId}_to"/>
+                            <label>Msg:</label>
+                            <input type="text" id="@{ep.linkId}_body"/>
+                            <button onclick="send('@ep.linkId', '@{ep.linkId}_to', '@{ep.linkId}_body');">Send</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td>@ep.state.outbound.getOrElse("n/a")</td>
+            <td>
+                <button onclick="dropTest('@ep.linkId');">Test Reconnect</button>
+                <button onclick="disconnect('@ep.linkId');">Disconnect</button>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <script>
+    function connect() {
+        var linkId = document.getElementById("linkId").value;
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function disconnect(linkId) {
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'DELETE',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function dropTest(linkId) {
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'PATCH',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function send(linkId, toId, bodyId) {
+        var to = document.getElementById(toId).value;
+        var body = document.getElementById(bodyId).value;
+        $.ajax({
+            url: '/endpoints/' + linkId + "/msg?to=" + to,
+            type: 'POST',
+            dataType: 'text',
+            data: body,
+            contentType: 'text/plain',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+</div>
+}

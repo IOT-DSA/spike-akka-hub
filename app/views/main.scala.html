@@ -1,0 +1,51 @@
+@(title: String, heading: String)(content: Html)
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Akka Cluster Playground">
+    <meta name="keywords" content="dsa,broker,scala,akka">
+    <meta name="author" content="Vlad Orzhekhovskiy">
+
+    <title>@title</title>
+
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/style.css")">
+
+    <script src="@routes.Assets.versioned("js/jquery.js")"></script>
+</head>
+
+<body>
+
+<nav>
+    <select onchange="goTo('http://' + this.value);">
+        <option value="-">select...</option>
+        <option value="localhost:9001">Broker1</option>
+        <option value="localhost:9002">Broker2</option>
+        <option value="localhost:9003">Broker3</option>
+        <option value="localhost:9004">Broker4</option>
+        <option value="localhost:9005">Broker5</option>
+    </select>
+    &nbsp;
+    <a href="/endpoints">connections</a> |
+    <a href="/links">links</a> |
+    <a href="/cluster">cluster</a>
+</nav>
+
+<h1>@heading</h1>
+<br/>
+
+@content
+
+<script>
+  function goTo(address) {
+    location.href = address;
+  }
+</script>
+
+</body>
+
+</html>

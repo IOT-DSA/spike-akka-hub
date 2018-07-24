@@ -1,0 +1,168 @@
+*{
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	filter: progid:DXImageTransform.Microsoft.gradient(enabled = false) !important;
+	text-shadow: none !important;
+	font-family: "Open Sans", Arial, Helvetica, sans-serif;
+	font-weight: 400;
+}
+
+form *{
+	font-family: "Open Sans", Arial, Helvetica, sans-serif;
+}
+
+input, textarea {
+	background-image: none !important;
+	border: 1px solid #ccc !important;
+	font-family: "Open Sans", Arial, Helvetica, sans-serif !important;
+}
+
+select{
+	font-size: 13px !important;
+}
+
+body{
+	font-size: 13px;
+	line-height: 23px;
+	padding-top: 10px;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,h2,h3,h4,h5,h6{
+	padding: 2px 0px;
+	margin: 5px 0px;
+	color: #777;
+	font-weight: 400;
+}
+
+h2{
+	font-size: 30px;
+	line-height: 40px;
+}
+
+h3{
+	font-size: 23px;
+	line-height: 33px;
+}
+
+h4{
+	font-size: 20px;
+	line-height: 30px;
+}
+
+h5{
+	font-size: 18px;
+	line-height: 38px;
+}
+
+h6{
+	font-size: 15px;
+	line-height: 25px;
+}
+
+p{
+	padding: 1px 0px !important;
+	margin:1px 0px !important;
+}
+
+a{
+	color: #33F;
+}
+
+a:hover{
+	color: #88F;
+}
+
+a:hover,a:focus,a:active{
+	outline: 0;
+}
+
+.bold{
+	font-weight: 600;
+}
+
+hr{
+	margin:8px 0px 8px 0px !important;
+	padding:0px !important;
+	border-top:0px;
+	border-bottom:1px solid #ddd !important;
+	height:0px;
+}
+
+table {
+    color: #333; /* Lighten up font color */
+    font-family: Helvetica, Arial, sans-serif; /* Nicer font */
+    /*width: 640px;*/
+    border-collapse:
+    collapse; border-spacing: 0;
+}
+
+th, td {
+    border: 1px solid #CCC;
+    height: 30px;
+}
+
+th {
+    background: #F3F3F3; /* Light grey background */
+    font-weight: bold; /* Make sure they're bold */
+}
+
+td {
+  background: #FAFAFA; /* Lighter grey background */
+  padding: 4px;
+  /*text-align: center;*/ /* Center our text */
+}
+
+/* Form */
+
+form{
+	margin: 10px 0px;
+}
+
+.form-inline button{
+	margin-left: 15px;
+}
+
+/* Half column - CHECK LATER */
+
+.col-left{
+	width: 48%;
+	float: left;
+}
+
+.col-right{
+	width: 48%;
+	float: right;
+}
+
+/* Main */
+
+.mainbar{
+	position: relative;
+	margin-right: 0px;
+	width: auto;
+	background:#fff;
+	min-height: 1200px;
+}
+
+.mainbar .container{
+   max-width:100% !important;
+}
+
+/* Page head */
+
+.mainbar .page-head{
+  padding: 15px 20px;
+  border-bottom: 1px solid #fff;
+}
+
+.mainbar .page-meta{
+	font-size: 13px;
+	line-height: 15px;
+	margin-left: 2px;
+	display: block;
+}
+
+.post{
+	margin-top: 20px;
+}

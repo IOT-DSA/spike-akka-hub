@@ -1,0 +1,127 @@
+@import akka.cluster._
+@import akka.actor._
+@import org.joda.time._
+
+@(cluster: Cluster, nodes: Set[NodeInfo], system: ActorSystem, config: String)
+
+@main("Akka-Hub: cluster", "Akka Cluster Information"){
+<div>
+
+    <h3>Cluster State</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Leader:</td>
+            <td>@cluster.state.leader.getOrElse("n/a").toString</td>
+        </tr>
+        <tr>
+            <td>Role Leaders:</td>
+            <td>@cluster.state.roleLeaderMap.toString</td>
+        </tr>
+        <tr>
+            <td>Seen By:</td>
+            <td>@cluster.state.seenBy.toString</td>
+        </tr>
+        <tr>
+            <td>Unreachable:</td>
+            <td>@cluster.state.unreachable.toString</td>
+        </tr>
+        <tr>
+            <td>Unreachable DCs:</td>
+            <td>@cluster.state.unreachableDataCenters.toString</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3>Members</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Address</th>
+            <th>Leader</th>
+            <th>UID</th>
+            <th>Roles</th>
+            <th>Status</th>
+            <th>DC</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(node <- nodes) {
+        <tr>
+            <td>@node.address</td>
+            <td>@node.leader</td>
+            <td>@node.uid</td>
+            <td>@node.roles</td>
+            <td>@node.status</td>
+            <td>@node.dc</td>
+            <td>
+                <button onclick="leave(@node.uid);">Leave</button>
+                <button onclick="down(@node.uid);">Down</button>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <h3>Actor System</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Name:</td>
+            <td>@system.name</td>
+        </tr>
+        <tr>
+            <td>Started At:</td>
+            <td>@{new DateTime(system.startTime)}</td>
+        </tr>
+        <tr>
+            <td>Uptime:</td>
+            <td>@{new Duration(system.uptime * 1000)}</td>
+        </tr>
+        <tr>
+            <td>Config:</td>
+            <td align="left">
+                <pre>@config</pre>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <script>
+    function leave(uid) {
+        $.ajax({
+            url: '/cluster/' + uid + '/leave',
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function down(uid) {
+        $.ajax({
+            url: '/cluster/' + uid + '/down',
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+</div>
+}
