@@ -26,7 +26,7 @@ class LinkManager @Inject()(system: ActorSystem, typeName: String, shardCount: I
 
   val region = {
     val sharding = ClusterSharding(system)
-    val settings = ClusterShardingSettings(system)
+    val settings = ClusterShardingSettings(system).withRole("broker")
     sharding.start(
       typeName,
       LinkActor.props(this, inactivityTimeout, snapshotInterval),

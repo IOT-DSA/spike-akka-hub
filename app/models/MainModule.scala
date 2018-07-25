@@ -53,11 +53,11 @@ class IdGeneratorProvider @Inject()(system: ActorSystem) extends Provider[ActorR
   system.actorOf(ClusterSingletonManager.props(
     singletonProps = IdGenerator.props,
     terminationMessage = PoisonPill,
-    settings = ClusterSingletonManagerSettings(system)), name = "IdGenerator")
+    settings = ClusterSingletonManagerSettings(system).withRole("broker")), name = "IdGenerator")
 
   private val idGenerator = system.actorOf(ClusterSingletonProxy.props(
     singletonManagerPath = "/user/IdGenerator",
-    settings = ClusterSingletonProxySettings(system)), name = "IdGeneratorProxy")
+    settings = ClusterSingletonProxySettings(system).withRole("broker")), name = "IdGeneratorProxy")
 
   def get(): ActorRef = idGenerator
 }
