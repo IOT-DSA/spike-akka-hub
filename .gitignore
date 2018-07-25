@@ -1,6 +1,10 @@
 *.class
 *.log
 
+# app specific
+snapshots/
+ddata-sharding/
+
 # sbt specific
 .cache
 .cache-main
