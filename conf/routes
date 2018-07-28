@@ -3,14 +3,14 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-GET       /                              controllers.ClientController.showEndpoints
+GET       /                              controllers.LinkController.showLinks
 
-GET       /endpoints                     controllers.ClientController.showEndpoints
-POST      /endpoints/:linkId             controllers.ClientController.connect(linkId)
-DELETE    /endpoints/:linkId             controllers.ClientController.disconnect(linkId)
-PATCH     /endpoints/:linkId             controllers.ClientController.testReconnect(linkId)
-POST      /endpoints                     controllers.ClientController.connectBatch(count: Int ?= 10)
-POST      /endpoints/:linkId/msg         controllers.ClientController.send(linkId, to)
+#GET       /endpoints                     controllers.ClientController.showEndpoints
+#POST      /endpoints/:linkId             controllers.ClientController.connect(linkId)
+#DELETE    /endpoints/:linkId             controllers.ClientController.disconnect(linkId)
+#PATCH     /endpoints/:linkId             controllers.ClientController.testReconnect(linkId)
+#POST      /endpoints                     controllers.ClientController.connectBatch(count: Int ?= 10)
+#POST      /endpoints/:linkId/msg         controllers.ClientController.send(linkId, to)
 
 GET       /links                         controllers.LinkController.showLinks
 GET       /links/:linkId                 controllers.LinkController.linkInfo(linkId)

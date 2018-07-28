@@ -11,6 +11,25 @@ services:
     networks:
       - dsnet
 
+  client:
+    image: uralian/akka-hub:latest
+    container_name: client
+    depends_on:
+      - broker1
+    volumes:
+      - ./conf:/opt/docker/conf
+    environment:
+      AKKA_REMOTING_BIND_HOST: client
+      AKKA_REMOTING_BIND_PORT: 2551
+      AKKA_SEED_NODES: broker1:2551,broker2:2551,broker3:2551,broker4:2551,broker5:2551
+      AKKA_ACTOR_SYSTEM_NAME: DSASystem
+      CONF_FILE: /opt/docker/conf/client.conf
+    ports:
+      - "9000:9000"
+      - "2550:2551"
+    networks:
+      - dsnet
+
   broker1:
     image: uralian/akka-hub:latest
     container_name: broker1

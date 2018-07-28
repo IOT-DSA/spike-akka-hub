@@ -1,8 +1,11 @@
-package models
+package client
 
 import akka.actor.Props
 import akka.persistence.{PersistentActor, SnapshotOffer}
 
+/**
+  * Generates sequential unique ids.
+  */
 class IdGenerator extends PersistentActor {
 
   import IdGenerator._
@@ -32,6 +35,9 @@ class IdGenerator extends PersistentActor {
   private def updateLastId(evt: IdsGenerated) = lastId = evt.ids.max
 }
 
+/**
+  * Factory for [[IdGenerator]] instances.
+  */
 object IdGenerator {
 
   case class GenerateIds(count: Int)

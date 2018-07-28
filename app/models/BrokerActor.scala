@@ -27,19 +27,19 @@ class BrokerActor(linkMgr: LinkManager) extends Actor with ActorLogging {
 
   def receive: Receive = {
 
-    case CreateEndpoint(linkId, true) =>
-      val ep = context.actorOf(EndpointActor.props(linkMgr, linkId))
+    case CreateEndpoint(linkId, client, true) =>
+      val ep = context.actorOf(EndpointActor.props(linkMgr, linkId, client))
+      log.info("Endpoint [{}] created to communicate with client [{}]", ep.path.name, linkId)
       linkMgr.tell(linkId, ConnectEndpoint(ep))
-      log.info("Link [{}] connected to endpoint {}", linkId, ep)
-      context.actorSelection("/user/client") ! EndpointCreated(linkId, ep)
+      sender ! EndpointCreated(linkId, ep, client)
 
-    case CreateEndpoint(linkId, false) =>
+    case evt @ CreateEndpoint(linkId, _, false) =>
       val originalSender = sender
       val linkAddress = linkMgr.ask(linkId, GetLinkInfo).mapTo[LinkInfo].map(_.ref.path.address)
       linkAddress foreach { address =>
         val selection = context.actorSelection(RootActorPath(address) / "user" / "broker")
         log.info("Routing CreateEndpoint({}) to {}", linkId, address)
-        selection.tell(CreateEndpoint(linkId, true), originalSender)
+        selection.tell(evt.copy(local = true), originalSender)
       }
 
     case RemoveEndpoint(linkId) =>
@@ -62,21 +62,23 @@ object BrokerActor {
   def props(linkManager: LinkManager) = Props(new BrokerActor(linkManager))
 
   /**
-    * Commands broker actor to create an endpoint and connect it to the link actor.
+    * Commands broker to create and endpoint actor logically connected to a remote "client".
     *
     * @param linkId
+    * @param client
     * @param local if `true`, immediately creates an endpoint; if `false`, determines if the command needs
     *              to be forwarded to the cluster node where link actor is running.
     */
-  case class CreateEndpoint(linkId: String, local: Boolean = false)
+  case class CreateEndpoint(linkId: String, client: ActorRef, local: Boolean = false)
 
   /**
     * Sent as response to CreateEndpoint.
     *
     * @param linkId
-    * @param ep
+    * @param endpoint
+    * @param client
     */
-  case class EndpointCreated(linkId: String, ep: ActorRef)
+  case class EndpointCreated(linkId: String, endpoint: ActorRef, client: ActorRef)
 
   /**
     * Commands broker actor to kill the endpoint actor connected to the link.

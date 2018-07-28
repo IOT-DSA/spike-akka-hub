@@ -1,14 +1,13 @@
 package controllers
 
 import akka.actor.{ActorRef, ActorSystem, PoisonPill}
-import akka.cluster.Cluster
 import akka.pattern._
 import akka.util.Timeout
+import client.ClientActor.{ClientInfo, GetClientInfo}
+import client.ClientManagerActor.{ConnectClientToBroker, DisconnectClientFromBroker, GetClient, GetClients}
+import client.IdGenerator.{GenerateIds, IdsGenerated}
 import javax.inject.{Inject, Named, Singleton}
-import models.ClientActor.{ConnectToBroker, DisconnectFromBroker, GetEndpoint, GetEndpoints}
-import models.EndpointActor.{EndpointState, GetEndpointState}
-import models.IdGenerator.{GenerateIds, IdsGenerated}
-import models.InboundMessage
+import models.EndpointActor.EndpointState
 import play.api.Logger
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -17,35 +16,43 @@ import scala.concurrent.duration._
 
 /**
   * Simulates client DSLink operations like connect, disconnect, auto-reconnect.
-  *
-  * The "connection" is simulated by issuing a CreateEndpoint request to the broker node,
-  * which automatically routes it to the cluster node which hosts the corresponding LinkActor.
-  *
-  * @param cc
   */
 @Singleton
 class ClientController @Inject()(system: ActorSystem,
                                  cc: ControllerComponents,
-                                 @Named("client") client: ActorRef,
+                                 @Named("clientManager") clientMgr: ActorRef,
                                  @Named("idGenerator") idGen: ActorRef) extends AbstractController(cc) {
 
   protected val log = Logger(getClass)
-
-  implicit protected val cluster = Cluster(system)
 
   implicit protected val timeout = Timeout(5 seconds)
 
   implicit protected val ec = cc.executionContext
 
-  private val linkIdPrefix = "dsl"
+  private val linkIdPrefix = "dsa"
 
-  def showEndpoints = Action.async {
-    allEndpoints map (eps => Ok(views.html.endpoints(cluster.selfMember, eps)))
+  def index = Action.async {
+    allClientsWithInfo map (clients => Ok(views.html.clients(clients)))
   }
 
   def connect(linkId: String) = Action {
-    client ! ConnectToBroker(linkId)
-    Ok(s"Link [$linkId] connected")
+    clientMgr ! ConnectClientToBroker(linkId)
+    Ok(s"Link [$linkId] ordered to connect")
+  }
+
+  def disconnect(linkId: String) = Action {
+    clientMgr ! DisconnectClientFromBroker(linkId)
+    Ok(s"Link [$linkId] ordered to disconnect")
+  }
+
+  def testReconnect(linkId: String) = Action.async {
+    clientWithInfo(linkId) map { info =>
+      val result = info.flatMap(_.endpoint).map { ep =>
+        ep ! PoisonPill
+        Ok(s"Link [$linkId] tested for auto-reconnect")
+      }
+      result.getOrElse(NotFound(s"Endpoint for link [$linkId] is not found"))
+    }
   }
 
   def connectBatch(count: Int) = Action.async {
@@ -54,7 +61,7 @@ class ClientController @Inject()(system: ActorSystem,
     generated map { gi =>
       gi.ids foreach { index =>
         val linkId = linkIdPrefix + index
-        client ! ConnectToBroker(linkId)
+        clientMgr ! ConnectClientToBroker(linkId)
       }
       val message = s"$count links created from [$linkIdPrefix${gi.ids.head}] to [$linkIdPrefix${gi.ids.last}]"
       log.info(message)
@@ -62,43 +69,38 @@ class ClientController @Inject()(system: ActorSystem,
     }
   }
 
-  def disconnect(linkId: String) = Action {
-    client ! DisconnectFromBroker(linkId)
-    Ok(s"Link [$linkId] disconnected")
-  }
-
-  def testReconnect(linkId: String) = Action.async {
-    getEndpoint(linkId).flatMap {
-      case Some(ref) => ref ! PoisonPill; Future.successful(Ok(s"Link [$linkId] tested for auto-reconnect"))
-      case None      => Future.successful(NotFound(s"Link [$linkId] not found"))
-    }
-  }
-
-  def send(linkId: String, to: String) = Action.async(parse.text(20)) { request =>
-    getEndpoint(linkId).flatMap {
-      case Some(ref) =>
-        ref ! InboundMessage(to, request.body)
-        Future.successful(Ok(s"Inbound message sent to link [$linkId]"))
-      case None      =>
-        Future.successful(NotFound(s"Link [$linkId] not found"))
-    }
-  }
-
-  private def allEndpoints = for {
-    endpoints <- (client ? GetEndpoints).mapTo[Map[String, ActorRef]]
-    states <- Future.sequence(endpoints.map {
-      case (linkId, ref) => (ref ? GetEndpointState).mapTo[EndpointState].map(EndpointInfo(linkId, ref, _))
+  private def allClientsWithInfo = for {
+    clients <- (clientMgr ? GetClients).mapTo[Iterable[ActorRef]]
+    responses <- Future.sequence(clients.map { client =>
+      (client ? GetClientInfo).mapTo[ClientInfo]
     })
-  } yield states
+  } yield responses
 
-  private def getEndpoint(linkId: String) = (client ? GetEndpoint(linkId)).mapTo[Option[ActorRef]]
+  private def clientWithInfo(linkId: String) = {
+    val client = (clientMgr ? GetClient(linkId)).mapTo[Option[ActorRef]]
+    client.flatMap {
+      case Some(c) => (c ? GetClientInfo).mapTo[ClientInfo].map(Some(_))
+      case None    => Future.successful(None)
+    }
+  }
+
+  //
+  //  def send(linkId: String, to: String) = Action.async(parse.text(20)) { request =>
+  //    getEndpoint(linkId).flatMap {
+  //      case Some(ref) =>
+  //        ref ! InboundMessage(to, request.body)
+  //        Future.successful(Ok(s"Inbound message sent to link [$linkId]"))
+  //      case None      =>
+  //        Future.successful(NotFound(s"Link [$linkId] not found"))
+  //    }
+  //  }
 }
 
-/**
-  * Encapsulates endpoint information.
-  *
-  * @param linkId
-  * @param ref
-  * @param state
-  */
+///**
+//  * Encapsulates endpoint information.
+//  *
+//  * @param linkId
+//  * @param ref
+//  * @param state
+//  */
 case class EndpointInfo(linkId: String, ref: ActorRef, state: EndpointState)
