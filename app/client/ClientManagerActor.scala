@@ -15,6 +15,9 @@ class ClientManagerActor(reconnectTimeout: Option[Duration]) extends Actor with 
 
   override def postStop(): Unit = log.info("ClientManager stopped")
 
+  /**
+    * Handles incoming messages.
+    */
   def receive: Receive = {
     case ConnectClientToBroker(linkId) =>
       log.info("Received connection request for link [{}]", linkId)
@@ -39,23 +42,53 @@ class ClientManagerActor(reconnectTimeout: Option[Duration]) extends Actor with 
     case GetClient(linkId) => sender ! context.child(linkId)
   }
 
+  /**
+    * Returns a child ClientActor with this name or creates a new one, if it does not exist.
+    *
+    * @param linkId
+    * @return
+    */
   private def getOrCreateClient(linkId: String) = context.child(linkId).getOrElse {
     context.watch(context.actorOf(ClientActor.props(reconnectTimeout), linkId))
   }
 }
 
 /**
-  * Factory for ClientActor instances.
+  * Factory for ClientManagerActor instances.
   */
 object ClientManagerActor {
+
+  /**
+    * Creates a new props for ClientManagerActor.
+    *
+    * @param reconnectTimeout
+    * @return
+    */
   def props(reconnectTimeout: Option[Duration]) = Props(new ClientManagerActor(reconnectTimeout))
 
+  /**
+    * Request to create a new client and connect it to the broker.
+    *
+    * @param linkId
+    */
   case class ConnectClientToBroker(linkId: String)
 
+  /**
+    * Request to disconnect a client with this name, it also remove the client actor.
+    *
+    * @param linkId
+    */
   case class DisconnectClientFromBroker(linkId: String)
 
+  /**
+    * Request to return all client actor refs.
+    */
   case object GetClients
 
+  /**
+    * Request to return a client actor ref with this name.
+    *
+    * @param linkId
+    */
   case class GetClient(linkId: String)
-
 }

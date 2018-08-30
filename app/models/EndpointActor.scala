@@ -37,7 +37,10 @@ class EndpointActor(linkMgr: LinkManager, linkId: String, client: ActorRef) exte
 
     case GetEndpointState => sender ! EndpointState(inbound, outbound)
 
-    case Terminated(_) => context.stop(self)
+    case Terminated(_) => {
+      log.info("Endpoint [{}] peer client terminated, stopping...", linkId)
+      context.stop(self)
+    }
   }
 
   private def sendToRemote(msg: Any) = client ! msg
@@ -49,10 +52,27 @@ class EndpointActor(linkMgr: LinkManager, linkId: String, client: ActorRef) exte
   * Instance factory for WebSocket actor.
   */
 object EndpointActor {
+
+  /**
+    * Creates a new props instance for EndpointActor.
+    *
+    * @param linkMgr
+    * @param linkId
+    * @param ref
+    * @return
+    */
   def props(linkMgr: LinkManager, linkId: String, ref: ActorRef) = Props(new EndpointActor(linkMgr, linkId, ref))
 
+  /**
+    * Request to return the endpoint state.
+    */
   case object GetEndpointState
 
+  /**
+    * Encapsulates information about the endpoint, sent back in response to GetEndpointState.
+    * @param inbound
+    * @param outbound
+    */
   case class EndpointState(inbound: Option[InboundMessage], outbound: Option[OutboundMessage])
 
 }

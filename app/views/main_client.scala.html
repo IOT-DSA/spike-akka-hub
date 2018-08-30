@@ -1,0 +1,30 @@
+@(title: String, heading: String)(content: Html)
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Akka Cluster Playground">
+    <meta name="keywords" content="dsa,broker,scala,akka">
+    <meta name="author" content="Vlad Orzhekhovskiy">
+
+    <title>@title</title>
+
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/style.css")">
+
+    <script src="@routes.Assets.versioned("js/jquery.js")"></script>
+</head>
+
+<body>
+
+<h1>@heading</h1>
+<br/>
+
+@content
+
+</body>
+
+</html>

@@ -1,7 +1,7 @@
 package client
 
 import akka.actor.{ActorRef, ActorSystem, PoisonPill}
-import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings}
+import akka.cluster.singleton._
 import javax.inject.{Inject, Provider, Singleton}
 import org.slf4j.LoggerFactory
 import play.api.inject.{Binding, Module}
@@ -25,6 +25,12 @@ class ClientModule extends Module {
   }
 }
 
+/**
+  * Creates a client manager, that will be responsible for creating "dslinks" to connect to the broker.
+  *
+  * @param system
+  * @param cfg
+  */
 @Singleton
 class ClientManagerProvider @Inject()(system: ActorSystem, cfg: Configuration) extends Provider[ActorRef] {
 
@@ -35,6 +41,11 @@ class ClientManagerProvider @Inject()(system: ActorSystem, cfg: Configuration) e
   def get(): ActorRef = clientManager
 }
 
+/**
+  * Creates a cluster-wide singleton instance of IdGenerator actor.
+  *
+  * @param system
+  */
 @Singleton
 class IdGeneratorProvider @Inject()(system: ActorSystem) extends Provider[ActorRef] {
 

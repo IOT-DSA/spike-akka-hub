@@ -7,7 +7,6 @@ import client.ClientActor.{ClientInfo, GetClientInfo}
 import client.ClientManagerActor.{ConnectClientToBroker, DisconnectClientFromBroker, GetClient, GetClients}
 import client.IdGenerator.{GenerateIds, IdsGenerated}
 import javax.inject.{Inject, Named, Singleton}
-import models.EndpointActor.EndpointState
 import play.api.Logger
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -83,24 +82,4 @@ class ClientController @Inject()(system: ActorSystem,
       case None    => Future.successful(None)
     }
   }
-
-  //
-  //  def send(linkId: String, to: String) = Action.async(parse.text(20)) { request =>
-  //    getEndpoint(linkId).flatMap {
-  //      case Some(ref) =>
-  //        ref ! InboundMessage(to, request.body)
-  //        Future.successful(Ok(s"Inbound message sent to link [$linkId]"))
-  //      case None      =>
-  //        Future.successful(NotFound(s"Link [$linkId] not found"))
-  //    }
-  //  }
 }
-
-///**
-//  * Encapsulates endpoint information.
-//  *
-//  * @param linkId
-//  * @param ref
-//  * @param state
-//  */
-case class EndpointInfo(linkId: String, ref: ActorRef, state: EndpointState)
