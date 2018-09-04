@@ -21,7 +21,7 @@
         <tr>
             <th>LinkId</th>
             <th>Connected</th>
-            <th>Endpoint</th>
+            <th>Endpoint Path</th>
             <th>Endpoint Host</th>
             <th>Actions</th>
         </tr>
@@ -31,7 +31,7 @@
         <tr>
             <td><a href="clients/@client.linkId">@client.linkId</a></td>
             <td>@client.isConnected</td>
-            <td>@client.endpoint.map(_.path.name)</td>
+            <td>@client.endpoint.map(_.path.toStringWithoutAddress)</td>
             <td>@client.endpoint.map(_.path.address.host)</td>
             <td>
                 <button onclick="dropTest('@client.linkId');">Test Reconnect</button>

@@ -1,0 +1,48 @@
+@import akka.actor._
+@import akka.cluster._
+@import models.EndpointActor._
+
+@(member: Member, endpoints: Iterable[EndpointInfo])
+
+@host(address: Address) = @{address.host.getOrElse(member.address.host)}
+
+@formatAddress(address: Address) = @{address.host}
+
+@main("Akka-Hub: endpoints", "Endpoints"){
+<div>
+    <h3>Connected Endpoints at <u>@formatAddress(member.address)</u></h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>LinkId</th>
+            <th>Endpoint Path</th>
+            <th>Client Path</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(ep <- endpoints) {
+        <tr>
+            <td><a href="links/@ep.linkId">@ep.linkId</a></td>
+            <td>@ep.ref.path.toStringWithoutAddress</td>
+            <td>@ep.client.path.toStringWithoutAddress</td>
+            <td><button onclick="disconnect('@ep.linkId');">Disconnect</button></td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <script>
+    function disconnect(linkId) {
+        $.ajax({
+            url: '/endpoints/' + linkId,
+            type: 'DELETE',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+</div>
+}

@@ -1,7 +1,7 @@
 package models
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import models.EndpointActor.{EndpointState, GetEndpointState}
+import models.EndpointActor.{EndpointInfo, EndpointState, GetEndpointInfo, GetEndpointState}
 
 /**
   * Imitates a WebSocket actor connected to a "client" actor representing a remote dslink.
@@ -37,6 +37,8 @@ class EndpointActor(linkMgr: LinkManager, linkId: String, client: ActorRef) exte
 
     case GetEndpointState => sender ! EndpointState(inbound, outbound)
 
+    case GetEndpointInfo => sender ! EndpointInfo(self, linkId, client)
+
     case Terminated(_) => {
       log.info("Endpoint [{}] peer client terminated, stopping...", linkId)
       context.stop(self)
@@ -69,10 +71,25 @@ object EndpointActor {
   case object GetEndpointState
 
   /**
+    * Request to return endpoint information.
+    */
+  case object GetEndpointInfo
+
+  /**
     * Encapsulates information about the endpoint, sent back in response to GetEndpointState.
+    *
     * @param inbound
     * @param outbound
     */
   case class EndpointState(inbound: Option[InboundMessage], outbound: Option[OutboundMessage])
+
+  /**
+    * Encapsulates endpoint information.
+    *
+    * @param ref
+    * @param linkId
+    * @param client
+    */
+  case class EndpointInfo(ref: ActorRef, linkId: String, client: ActorRef)
 
 }

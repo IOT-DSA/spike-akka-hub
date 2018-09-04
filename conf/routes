@@ -5,11 +5,9 @@
 
 GET       /                              controllers.LinkController.showLinks
 
-#GET       /endpoints                     controllers.ClientController.showEndpoints
-#POST      /endpoints/:linkId             controllers.ClientController.connect(linkId)
-#DELETE    /endpoints/:linkId             controllers.ClientController.disconnect(linkId)
-#PATCH     /endpoints/:linkId             controllers.ClientController.testReconnect(linkId)
-#POST      /endpoints                     controllers.ClientController.connectBatch(count: Int ?= 10)
+GET       /endpoints                     controllers.EndpointController.index
+DELETE    /endpoints/:linkId             controllers.EndpointController.disconnect(linkId)
+
 #POST      /endpoints/:linkId/msg         controllers.ClientController.send(linkId, to)
 
 GET       /links                         controllers.LinkController.showLinks

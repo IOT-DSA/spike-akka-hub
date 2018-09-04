@@ -5,7 +5,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props, RootActorPa
 import akka.cluster.Cluster
 import akka.pattern._
 import akka.util.Timeout
-import models.BrokerActor.{CreateEndpoint, EndpointCreated, EndpointRemoved, RemoveEndpoint}
+import models.BrokerActor._
 import models.LinkActor.{ConnectEndpoint, GetLinkInfo, LinkInfo}
 
 import scala.concurrent.duration._
@@ -27,8 +27,12 @@ class BrokerActor(linkMgr: LinkManager) extends Actor with ActorLogging {
 
   def receive: Receive = {
 
+    case GetEndpoints => sender ! context.children
+
+    case GetEndpoint(linkId) => sender ! context.child(linkId)
+
     case CreateEndpoint(linkId, client, true) =>
-      val ep = context.actorOf(EndpointActor.props(linkMgr, linkId, client))
+      val ep = context.actorOf(EndpointActor.props(linkMgr, linkId, client), linkId)
       log.info("Endpoint [{}] created to communicate with client [{}]", ep.path.name, linkId)
       linkMgr.tell(linkId, ConnectEndpoint(ep))
       sender ! EndpointCreated(linkId, ep, client)
@@ -93,5 +97,17 @@ object BrokerActor {
     * @param linkId
     */
   case class EndpointRemoved(linkId: String)
+
+  /**
+    * Request for all broker's endpoints.
+    */
+  case object GetEndpoints
+
+  /**
+    * Request to retrieve the specified endpoint.
+    *
+    * @param linkId
+    */
+  case class GetEndpoint(linkId: String)
 
 }
