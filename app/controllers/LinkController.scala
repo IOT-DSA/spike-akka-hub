@@ -25,15 +25,13 @@ import scala.util.control.NonFatal
   * @param linkManager
   * @param configuration
   * @param broker
-  * @param idGen
   */
 @Singleton
 class LinkController @Inject()(system: ActorSystem,
                                cc: ControllerComponents,
                                linkManager: LinkManager,
                                configuration: Configuration,
-                               @Named("broker") broker: ActorRef,
-                               @Named("idGenerator") idGen: ActorRef) extends AbstractController(cc) {
+                               @Named("broker") broker: ActorRef) extends AbstractController(cc) {
 
   import ShardRegion._
 
@@ -44,8 +42,6 @@ class LinkController @Inject()(system: ActorSystem,
   implicit protected val ec = cc.executionContext
 
   implicit protected val timeout = Timeout(5 seconds)
-
-  private val linkIdPrefix = "link"
 
   def showLinks = Action.async {
     val fcsrs = (linkManager.region ? GetShardRegionState).mapTo[CurrentShardRegionState]
@@ -63,8 +59,9 @@ class LinkController @Inject()(system: ActorSystem,
     } yield Ok(views.html.link(cluster.selfMember, linkInfo))
   }
 
+  // TODO
   def connect(linkId: String) = Action.async {
-    (broker ? CreateEndpoint(linkId)).mapTo[EndpointCreated] map { ec =>
+    (broker ? CreateEndpoint(linkId, null)).mapTo[EndpointCreated] map { ec =>
       Ok(s"Link [$linkId] connected to endpoint")
     }
   }

@@ -33,9 +33,8 @@
             <th>Link</th>
             <th>Connected</th>
             <th>Endpoint Host</th>
+            <th>Endpoint Path</th>
             <th>Co-located</th>
-            <th>Inbound</th>
-            <th>Outbound</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -46,13 +45,10 @@
             <td><a href="/links/@link.linkId">@link.linkId</a></td>
             <td>@link.isConnected</td>
             <td>@{link.endpoint.map(_.path.address).map(host)}</td>
+            <td>@{link.endpoint.map(_.path.toStringWithoutAddress)}</td>
             <td>@link.isLocalEp</td>
-            <td>@link.inbound</td>
-            <td>@link.outbound</td>
             <td>
-                @if(!link.isConnected) {
-                <button onclick="connect('@link.linkId');">Connect</button>
-                } else {
+                @if(link.isConnected) {
                 <button onclick="disconnect('@link.linkId');">Disconnect</button>
                 }
                 <button onclick="stop('@link.linkId');">Stop</button>
@@ -114,17 +110,6 @@
     </table>
 
     <script>
-    function connect(linkId) {
-        $.ajax({
-            url: '/endpoints/' + linkId,
-            type: 'POST',
-            success: function(data) {
-                alert(data);
-                location.reload();
-            }
-        });
-    }
-
     function disconnect(linkId) {
         $.ajax({
             url: '/endpoints/' + linkId,

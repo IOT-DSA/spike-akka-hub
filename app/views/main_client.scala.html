@@ -20,31 +20,10 @@
 
 <body>
 
-<nav>
-    <select onchange="goTo('http://' + this.value);">
-        <option value="-">select...</option>
-        <option value="localhost:9001">Broker1</option>
-        <option value="localhost:9002">Broker2</option>
-        <option value="localhost:9003">Broker3</option>
-        <option value="localhost:9004">Broker4</option>
-        <option value="localhost:9005">Broker5</option>
-    </select>
-    &nbsp;
-    <a href="/endpoints">endpoints</a> |
-    <a href="/links">links</a> |
-    <a href="/cluster">cluster</a>
-</nav>
-
 <h1>@heading</h1>
 <br/>
 
 @content
-
-<script>
-  function goTo(address) {
-    location.href = address;
-  }
-</script>
 
 </body>
 

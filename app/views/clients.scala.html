@@ -1,0 +1,94 @@
+@import client.ClientActor._
+
+@(clients: Iterable[ClientInfo])
+
+@main_client("Akka-Hub: clients", "Client Connections"){
+<div>
+
+    <label>New client:</label>
+    <input type="text" id="linkId"/>
+    <button onclick="connect();">Connect</button>
+    <br/>
+
+    <label>New client batch:</label>
+    <input type="number" id="batchSize" min="5" max="100" step="5" />
+    <button onclick="connectBatch();">Connect</button>
+    <br/>
+
+    <h3>Clients</h3>
+    <table width="90%">
+        <thead>
+        <tr>
+            <th>LinkId</th>
+            <th>Connected</th>
+            <th>Endpoint Path</th>
+            <th>Endpoint Host</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(client <- clients) {
+        <tr>
+            <td><a href="clients/@client.linkId">@client.linkId</a></td>
+            <td>@client.isConnected</td>
+            <td>@client.endpoint.map(_.path.toStringWithoutAddress)</td>
+            <td>@client.endpoint.map(_.path.address.host)</td>
+            <td>
+                <button onclick="dropTest('@client.linkId');">Test Reconnect</button>
+                <button onclick="disconnect('@client.linkId');">Disconnect</button>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <script>
+    function connect() {
+        var linkId = $('#linkId').val();
+        $.ajax({
+            url: '/clients/' + linkId,
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function connectBatch() {
+        var batchSize = $('#batchSize').val();
+        $.ajax({
+            url: '/clients?count=' + batchSize,
+            type: 'POST',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function disconnect(linkId) {
+        $.ajax({
+            url: '/clients/' + linkId,
+            type: 'DELETE',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+
+    function dropTest(linkId) {
+        $.ajax({
+            url: '/clients/' + linkId,
+            type: 'PATCH',
+            success: function(data) {
+                alert(data);
+                location.reload();
+            }
+        });
+    }
+    </script>
+
+</div>
+}
